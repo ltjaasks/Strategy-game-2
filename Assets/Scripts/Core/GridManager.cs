@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.TerrainUtils;
 
+
+/// <summary>
+/// Class to control the grid.
+/// </summary>
 public class GridManager : MonoBehaviour
 {
     public static GridManager Instance;
-    public Dictionary<Vector2Int, Tile> tiles = new Dictionary<Vector2Int, Tile>();
+    public Dictionary<Vector2Int, Tile> Tiles = new Dictionary<Vector2Int, Tile>();
 
     private void Awake()
     {
@@ -20,33 +24,47 @@ public class GridManager : MonoBehaviour
         // Populate the tiles dictionary with all Tile objects in the scene.
         foreach (Tile tile in FindObjectsByType<Tile>(FindObjectsSortMode.None))
         {
-            tiles[tile.gridPosition] = tile;
+            Tiles[tile.gridPosition] = tile;
         }
-
-        Debug.Log("Count of tiles: " + GridManager.Instance.tiles.Count);
     }
 
 
-    // Retrieves a tile at the specified grid position.
+    /// <summary>
+    /// Retrieves a tile at the specified grid position.
+    /// </summary>
+    /// <param name="position">Position to get the tile from</param>
+    /// <returns>Requested tile</returns>
     public Tile GetTile(Vector2Int position)
     {
-        tiles.TryGetValue(position, out Tile tile);
+        Tiles.TryGetValue(position, out Tile tile);
         return tile;
     }
 
+    public Dictionary<Vector2Int, Tile> GetTiles => Tiles;
 
-    // Converts grid position to world position, considering elevation.
+
+    /// <summary>
+    /// Converts grid position to world position, considering elevation.
+    /// </summary>
+    /// <param name="gridPosition">Position on grid</param>
+    /// <param name="elevation">Elevation</param>
+    /// <returns></returns>
     public Vector3 GridToWorld(Vector2Int gridPosition, int elevation = 0)
     {
-        return new Vector3(gridPosition.x, elevation, gridPosition.y);
+        Tile tile = GetTile(gridPosition);
+        double e = tile.elevation + 0.5;
+        return new Vector3(gridPosition.x, (float)e, gridPosition.y);
     }
 
-
-    public void ClearHighlights()
+    /// <summary>
+    /// Gets units position on the grid plus elevation
+    /// </summary>
+    /// <param name="pos">Units position on grid</param>
+    /// <returns>Position on grid plus elevation</returns>
+    public Vector3 UnitGridPosition(Vector2Int pos)
     {
-        foreach (var tile in tiles.Values)
-        {
-            tile.ClearHighlight();
-        }
+        Tile tile = GetTile(pos);
+        double e = tile.elevation + 0.5;
+        return new Vector3(pos.x, (float)e, pos.y);
     }
 }

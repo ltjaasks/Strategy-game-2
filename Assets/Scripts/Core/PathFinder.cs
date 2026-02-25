@@ -2,15 +2,20 @@ using System.Collections.Generic;
 using UnitMoves;
 using UnityEngine;
 
+
+/// <summary>
+/// Class to calculate of a unit to target tile using breadth-first search (BFS) algorithm.
+/// </summary>
 public class PathFinder : MonoBehaviour
 {
-    /*
-    public Vector2Int[] GetPath(Unit unit, Vector2Int target)
-    {
-        return CalculatePath(unit.GridPos, target, unit).ToArray();
-    }
-    */
 
+    /// <summary>
+    /// Path calculation algorithm.
+    /// </summary>
+    /// <param name="start">Starting tile</param>
+    /// <param name="target">Target tile</param>
+    /// <param name="unit">Unit to path</param>
+    /// <returns>List of the path tiles</returns>
     public static List<Vector2Int> CalculatePath(Vector2Int start, Vector2Int target, Unit unit)
     {
         int safetyCounter = 0;
@@ -27,9 +32,9 @@ public class PathFinder : MonoBehaviour
         while (frontier.Count > 0) // While there are positions to explore
         {
             safetyCounter++;
-            if (safetyCounter > 10_000)
+            if (safetyCounter > 10_00)
             {
-                Debug.LogError("BFS aborted: too many iterations");
+                //Debug.LogError("BFS aborted: too many iterations");
                 return null;
             }
 
@@ -39,7 +44,7 @@ public class PathFinder : MonoBehaviour
                 break;
             }
 
-            foreach (Vector2Int move in UnitsData.GetMoveSet(unit.Type, current))
+            foreach (Vector2Int move in UnitsData.GetMoveSet(unit.Type, current, unit.ForwardDirection))
             {
                 Vector2Int next = move;
 

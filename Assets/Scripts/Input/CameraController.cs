@@ -1,10 +1,14 @@
 using System;
 using UnityEngine;
 
+
+/// <summary>
+/// Camera controller class to handle player input for moving and zooming the camera.
+/// </summary>
 public class CameraController : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private float moveSpeed = 15f;
+    [SerializeField] private float moveSpeed = 5f;
 
     [Header("Zoom")]
     [SerializeField] private float zoomSpeed = 600f;
@@ -25,6 +29,10 @@ public class CameraController : MonoBehaviour
         HandleZoom();
     }
 
+
+    /// <summary>
+    /// Movement of camera
+    /// </summary>
     private void HandleMovement()
     {
         float h = Input.GetAxisRaw("Horizontal"); // A/D
@@ -48,6 +56,10 @@ public class CameraController : MonoBehaviour
         transform.position += direction * moveSpeed * Time.deltaTime;
     }
 
+
+    /// <summary>
+    /// Camera zoom.
+    /// </summary>
     private void HandleZoom()
     {
         float scroll = Input.mouseScrollDelta.y;

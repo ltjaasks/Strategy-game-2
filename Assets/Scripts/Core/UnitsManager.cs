@@ -4,13 +4,23 @@ using System.Linq;
 using UnityEngine;
 using static UnityEditor.PlayerSettings;
 
+
+/// <summary>
+/// Class to manage all units collectively in the game.
+/// </summary>
 public class UnitsManager : MonoBehaviour
 {
     public static UnitsManager Instance;
-    private Dictionary<Vector2Int, List<Unit>> unitsByTile = new Dictionary<Vector2Int, List<Unit>>();
-    private Dictionary<Unit, Vector2Int> NextMoves = new Dictionary<Unit, Vector2Int>();
 
-    private List<Unit> allUnits = new List<Unit>();
+    // Dictionary mapping tile positions to the unit currently occupying that tile.
+    private Dictionary<Vector2Int, Unit> UnitsByTile = new Dictionary<Vector2Int, Unit>();
+
+    // List of all units in the game for easy iteration and management.
+    private List<Unit> _allUnits = new List<Unit>();
+
+    // Dictionary to store event handlers for unit position changes, allowing us to unsubscribe when units are unregistered.
+    private Dictionary<Unit, Action<Vector2Int, Vector2Int>> _posChangedHandlers = new Dictionary<Unit, Action<Vector2Int, Vector2Int>>();
+
 
     private void Awake()
     {
@@ -20,48 +30,60 @@ public class UnitsManager : MonoBehaviour
             return;
         }
         Instance = this;
-
-        Debug.Log("UnitsManager initialized");
     }
 
 
-    // Registers a unit with the UnitsManager on creation.
+    /// <summary>
+    /// Registers a unit with the UnitsManager on creation.
+    /// </summary>
+    /// <param name="unit"></param>
     public void RegisterUnit(Unit unit)
     {
-        allUnits.Add(unit);
+        _allUnits.Add(unit);
 
-        if (!unitsByTile.TryGetValue(unit.GridPos, out var list)) // Check if there's already a list for this tile
+        if (UnitsByTile.TryGetValue(unit.GridPos, out var existing)) // Check if there's already a list for this tile
         {
-            list = new List<Unit>(); // Create a new empty list
-            unitsByTile[unit.GridPos] = list; // Add the new list to the dictionary
+            Debug.LogWarning("Tile already has unit");
         }
-        list.Add(unit); // Add the unit to the list for its current tile
+        UnitsByTile[unit.GridPos] = unit; // Add the new list to the dictionary
 
         // Subscribe to the unit's position change event to update its position in the manager on change.
-        unit.OnGridPosChanged += (oldPos, newPos) => UpdateUnitPosition(unit, oldPos, newPos);
+        Action<Vector2Int, Vector2Int> handler = (oldPos, newPos) => UpdateUnitPosition(unit, oldPos, newPos);
+        unit.OnGridPosChanged += handler;
+        _posChangedHandlers[unit] = handler;
 
-        Debug.Log("Unit registered in UnitsManager: " + unitsByTile.Count);
         OnUnitRegistered?.Invoke(unit);
     }
 
     public event Action<Unit> OnUnitRegistered;
 
 
-    // Unregisters a unit from the UnitsManager on destruction.
-    // Destruction happens on unit capture or removal from the game.
-    // Called from CombatResolver or other game logic.
+    /// <summary>
+    /// Unregisters a unit from UnitsManager on destruction
+    /// </summary>
+    /// <param name="unit">Unit to destroy</param>
     public void UnRegisterUnit(Unit unit)
     {
-        allUnits.Remove(unit);
+        _allUnits.Remove(unit);
         RemoveFromTile(unit, unit.GridPos);
 
-        unit.OnGridPosChanged -= (oldPos, newPos) => UpdateUnitPosition(unit, oldPos, newPos);
+        // Unsubscribe from the unit's position change event.
+        if (_posChangedHandlers.TryGetValue(unit, out var handler))
+        {
+            unit.OnGridPosChanged -= handler;
+            _posChangedHandlers.Remove(unit);
+        }
 
         Destroy(unit.gameObject);
     }
 
 
-    // Updates a unit's position in the unitsByTile dictionary when it moves.
+    /// <summary>
+    /// Updates a unit's position in the unitsByTile dictionary when it moves.
+    /// </summary>
+    /// <param name="unit">Unit to update</param>
+    /// <param name="oldPos">Old position of unit</param>
+    /// <param name="newPos">New Position of unit</param>
     private void UpdateUnitPosition(Unit unit, Vector2Int oldPos, Vector2Int newPos)
     {
         RemoveFromTile(unit, oldPos);
@@ -69,135 +91,70 @@ public class UnitsManager : MonoBehaviour
     }
 
 
-    // Removes a unit from the specified tile in the unitsByTile dictionary.
+    /// <summary>
+    /// Removes a unit from the specified tile in the unitsByTile dictionary.
+    /// </summary>
+    /// <param name="unit">Unit to remove</param>
+    /// <param name="position">Position the unit was on</param>
     private void RemoveFromTile(Unit unit, Vector2Int position)
     {
-        if (unitsByTile.TryGetValue(position, out var list)) // Check if there's a list for the tile
+        if (UnitsByTile.TryGetValue(position, out var existing)) // Check if there's an entry for the tile
         {
-            list.Remove(unit); // Remove the unit from the list
-
-            if (list.Count == 0) // If the list is now empty, remove the entry from the dictionary
+            // Only remove if the stored unit matches the one being removed
+            if (existing == unit)
             {
-                unitsByTile.Remove(position);
+                UnitsByTile.Remove(position);
+            }
+            else
+            {
+                // If existing is not the same unit, we leave it (this can happen if you replaced the tile entry earlier)
+                Debug.Log($"RemoveFromTile: tile {position} contains different unit ({existing?.name}), not removing.");
             }
         }
     }
 
 
-    // Adds a unit to the specified tile in the unitsByTile dictionary.
+    /// <summary>
+    /// Adds a unit to the specified tile in the unitsByTile dictionary.
+    /// </summary>
+    /// <param name="unit">Unit to add</param>
+    /// <param name="position">Position to add the unit</param>
     private void AddToTile(Unit unit, Vector2Int position)
     {
-        if (!unitsByTile.TryGetValue(position, out var list)) // Check if there's already a list for this tile
+        if (UnitsByTile.TryGetValue(position, out var existing))
         {
-            list = new List<Unit>(); // Create a new empty list
-            unitsByTile[position] = list; // Add the new list to the dictionary
+            Debug.LogWarning($"AddToTile: tile {position} already occupied by {existing?.name}. Replacing with {unit.name}.");
         }
-        list.Add(unit); // Add the unit to the list for its current tile
+        UnitsByTile[position] = unit;
     }
 
 
-    // Checks if a tile has same team units present. Allies block movement.
-    // Returns true if an same team unit is found on the tile, false otherwise.
-    public bool CheckTileForAllies(Vector2Int position, Boolean isAlly)
+    /// <summary>
+    /// Checks if a tile has enemy team units.
+    /// </summary>
+    /// <param name="tile"></param>
+    /// <param name="isAlly"></param>
+    /// <returns>Returns true if tile has enemy, otherwise returns false</returns>
+    public bool CheckTileForEnemy(Vector2Int tile, Boolean isAlly)
     {
-        if (unitsByTile.TryGetValue(position, out var list))
+        if (UnitsByTile.TryGetValue(tile, out var unit))
         {
-            Unit unit = list[0];
-            return unit.IsAlly == isAlly;
+            return unit.IsAlly != isAlly;
         }
 
         return false;
     }
 
 
-    // Checks all tiles for multiple units and triggers combat resolution if found.
-    public void CheckForCombat()
-    {
-        foreach (var kvp in unitsByTile)
-        {
-            var unitsOnTile = kvp.Value;
-            if (unitsOnTile.Count < 2) continue; // If key value pair has less than 2 units continue (no combat)
-
-            CombatResolver.Instance.ResolveCombat(unitsOnTile);
-        }
-    }
-
-
-    // Check for units trying to swap tiles and handle collisions. Collision of different teams triggers combat.
-    public void CheckForCollisions()
-    {
-        var processedUnits = new HashSet<Unit>();
-        foreach (var kvp in NextMoves)
-        {
-            Unit unitA = kvp.Key;
-            Vector2Int targetPosA = kvp.Value;
-            if (processedUnits.Contains(unitA))
-                continue;
-            foreach (var kvp2 in NextMoves)
-            {
-                Unit unitB = kvp2.Key;
-                Vector2Int targetPosB = kvp2.Value;
-                if (unitA == unitB || processedUnits.Contains(unitB))
-                    continue;
-                // Check for swap
-                if (unitA.IsAlly == unitB.IsAlly)
-                {
-                    //unitA.CancelMove();
-                    //unitB.CancelMove();
-                    continue;
-                }
-                if (unitA.GridPos == targetPosB && unitB.GridPos == targetPosA)
-                {
-                    CombatResolver.Instance.ResolveCollision(unitA, unitB);
-                    break;
-                }
-            }
-        }
-    }
-
-
-    // Collects the next intended moves for all units in NextMoves dictionary.
-    public void CollectNextMoves()
-    {
-        NextMoves.Clear();
-        foreach (var unit in allUnits)
-        {
-            Vector2Int? temp = unit.GetNextTileInPath();
-
-            if (temp == null)
-            {
-                continue; // Skip units with no next tile
-            }
-
-            Vector2Int next = temp.Value;
-
-            NextMoves[unit] = next;
-        }
-    }
-
-
-    // Checks which side controls a given tile based on unit influence.
-    // Returns 1 if controlled by allies, -1 if controlled by enemies, 0 if neutral.
-    public List<Unit> CheckControlOfTile(Vector2Int tile)
-    {
-        List <Unit> controllingUnits = new List<Unit>();
-
-        foreach (var unit in allUnits)
-        {
-            if (unit.GetControlledTiles(unit.GridPos).Contains(tile))
-            {
-                controllingUnits.Add(unit);
-            }
-        }
-
-        return controllingUnits;
-    }
-
+    /// <summary>
+    /// Get unit at specific position.
+    /// </summary>
+    /// <param name="position">Position to check for unit</param>
+    /// <returns>Unit found or null if no unit was found</returns>
     public Unit GetUnitAt(Vector2Int position)
     {
-        foreach (var unit in allUnits)
+        foreach (var unit in _allUnits)
         {
-            Debug.Log($"Checking unit at {unit.GridPos} against position {position}");
             if (unit.GridPos == position)
             {
                 return unit;
@@ -207,10 +164,15 @@ public class UnitsManager : MonoBehaviour
     }
 
 
+    /// <summary>
+    /// Returns an array of units that are either allies or enemies based on the isAlly parameter.
+    /// </summary>
+    /// <param name="isAlly">The team of which units to get</param>
+    /// <returns>Array of units of specific team</returns>
     public Unit[] GetUnitsByFaction(bool isAlly)
     {
         var unitsByFaction = new List<Unit>();
-        foreach (var unit in allUnits)
+        foreach (var unit in _allUnits)
         {
             if (unit.IsAlly == isAlly)
             {
@@ -220,4 +182,18 @@ public class UnitsManager : MonoBehaviour
 
         return unitsByFaction.ToArray();
     }
+
+
+    /// <summary>
+    /// Get the dictionary mapping tile positions to the unit currently occupying that tile.
+    /// </summary>
+    /// <returns>Dictionary mapping tile positions to units</returns>
+    public Dictionary<Vector2Int, Unit> GetUnitsByTile()
+    {
+        return UnitsByTile;
+    }
+
+
+    public Unit[] GetUnits => _allUnits.ToArray();
+
 }

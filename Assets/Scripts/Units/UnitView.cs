@@ -1,51 +1,15 @@
 using UnityEngine;
 
+
+/// <summary>
+/// Currently obsolete class. Used to handle unit model visual movement on board. Kept for now for possible future need.
+/// </summary>
 public class UnitView : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 6f;
+    private Unit _unit;
 
-    private Unit unit;
-    private Vector3 targetWorldPos;
-
-    void Awake()
+    private void Awake()
     {
-        unit = GetComponent<Unit>();
-        targetWorldPos = transform.position;
-    }
-
-    void OnEnable()
-    {
-        unit.OnGridPosChangedVisual += HandleGridPosChanged;
-    }
-
-    void OnDisable()
-    {
-        unit.OnGridPosChangedVisual -= HandleGridPosChanged;
-    }
-
-    void Update()
-    {
-        transform.position = Vector3.MoveTowards(
-            transform.position,
-            targetWorldPos,
-            moveSpeed * Time.deltaTime
-        );
-    }
-
-    void HandleGridPosChanged(Unit unit)
-    {
-        Vector2Int? temp = unit.GetNextTileInPath();
-
-        if (temp == null)
-        {
-            return; // Skip units with no next tile
-        }
-
-        Vector2Int next = temp.Value;
-
-        targetWorldPos = GridManager.Instance.GridToWorld(
-            unit.GridPos,
-            GridManager.Instance.GetTile(next).elevation + 1
-        );
+        _unit = GetComponentInParent<Unit>();
     }
 }

@@ -1,0 +1,48 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.cs]
+indent_style = space
+indent_size = 4
+charset = utf-8
+
+# Naming style: private fields prefixed with underscore and camelCase after underscore
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_prefix_style
+dotnet_naming_rule.private_fields_underscore.severity = warning
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_style.underscore_prefix_style.required_prefix = _
+dotnet_naming_style.underscore_prefix_style.capitalization = camel_case
+
+# Naming style: properties and methods use PascalCase
+dotnet_naming_rule.properties_pascal.symbols = properties
+dotnet_naming_rule.properties_pascal.style = pascal_style
+dotnet_naming_rule.properties_pascal.severity = warning
+
+dotnet_naming_symbols.properties.applicable_kinds = property
+dotnet_naming_symbols.properties.applicable_accessibilities = *
+
+dotnet_naming_style.pascal_style.capitalization = pascal_case
+
+# Optional: methods PascalCase (explicit rule)
+dotnet_naming_rule.methods_pascal.symbols = methods
+dotnet_naming_rule.methods_pascal.style = pascal_style
+dotnet_naming_rule.methods_pascal.severity = warning
+
+dotnet_naming_symbols.methods.applicable_kinds = method
+dotnet_naming_symbols.methods.applicable_accessibilities = *
+
+# File headers and formatting preferences
+file_header_template = Copyright (c) YourCompany. All rights reserved.
+
+
+# Editor behaviour
+csharp_new_line_before_open_brace = all

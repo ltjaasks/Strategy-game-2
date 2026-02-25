@@ -2,73 +2,76 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+/// <summary>
+/// Class to control enemy units' behavior.
+/// </summary>
 public class EnemyController : MonoBehaviour
 {
-    private int _patrolX = 5;
-
     private Unit[] EnemyUnits;
-    void Start()
-    {
-        StartCoroutine(EnemiesStartDelayed());
-    }
+    public static EnemyController Instance;
 
-    private IEnumerator EnemiesStartDelayed()
+    
+    void Awake()
     {
-        // Wait one frame to ensure all units are registered
-        yield return new WaitForSeconds(1f);
-        EnemiesStart();
-    }
-
-    // Do event based solution later. For now something simpler.
-    /*
-    private void OnEnable()
-    {
-        UnitsManager.Instance.OnUnitRegistered += OnUnitRegistered;
-    }
-
-    private void OnDisable()
-    {
-        UnitsManager.Instance.OnUnitRegistered -= OnUnitRegistered;
-    }
-
-    private void OnUnitRegistered(Unit unit)
-    {
-        if (!unit.IsAlly)
+        if (Instance != null && Instance != this)
         {
-            Debug.Log("Enemy added to e: " + unit.Type);
-            EnemyUnits.Add(unit);
-            Patrol(unit);
-        }
-    }
-    */
-
-    private void EnemiesStart()
-    {
-        Debug.Log("Enemies start runs now.");
-
-        EnemyUnits = UnitsManager.Instance.GetUnitsByFaction(false);
-
-        Debug.Log("Enemy units count: " + EnemyUnits.Length);
-
-        if (!(EnemyUnits.Length > 0))
-        {
+            Destroy(gameObject);
             return;
         }
 
-        InvokeRepeating(nameof(PatrolEnemy1), 1f, 5f);
+        Instance = this;
     }
 
-    private void PatrolEnemy1()
+
+    /// <summary>
+    /// Moves enemy units. Currently enemies attack if possible and move randomly otherwise.
+    /// TODO: Smart AI
+    /// </summary>
+    public void MoveEnemies()
     {
-        Unit enemy1 = EnemyUnits[0];
-        Patrol(enemy1);
+        EnemyUnits = UnitsManager.Instance.GetUnitsByFaction(false);
+
+
+        foreach (Unit unit in EnemyUnits)
+        {
+            Vector2Int[] moveTiles = unit.GetMoveTiles();
+            Vector2Int[] attackTiles = unit.GetAttackTiles();
+
+            Vector2Int? attackTarget = CanAttack(attackTiles);
+
+            // If there is a valid attack target, set the attack tile and skip to the next unit
+            if (attackTarget != null)
+            {
+                unit.SetAttackTile(GridManager.Instance.GetTile(attackTarget.Value));
+                continue;
+            }
+
+            // Get a random tile from the moveTiles array
+            Tile targetTile = GridManager.Instance.GetTile(moveTiles[Random.Range(0, moveTiles.Length)]);
+
+            if (targetTile == null)
+                continue;
+
+            unit.SetTargetTile(targetTile);
+        }
     }
 
-    private void Patrol(Unit unit)
+
+    /// <summary>
+    /// Checks if any of the given attack tiles contain an enemy unit.
+    /// </summary>
+    /// <param name="attackTiles">Units attackTiles</param>
+    /// <returns>Tile the unit can attack to or null if no such tile</returns>
+    public Vector2Int? CanAttack(Vector2Int[] attackTiles)
     {
-        _patrolX = _patrolX == 0 ? 5 : 0;
-
-        unit.SetPath(GridManager.Instance.GetTile(new Vector2Int(_patrolX, unit.GridPos.y)));
-
+        foreach (Vector2Int tile in attackTiles)
+        {
+            if (UnitsManager.Instance.CheckTileForEnemy(tile, false))
+            {
+                return tile;
+            }
+        }
+        return null;
     }
 }
