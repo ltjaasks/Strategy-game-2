@@ -38,6 +38,7 @@ The goal was to design a well working system and not polish visuals for the prot
 - C#
 - Shader Graph
 - Git (branch-based workflow)
+- Blender
 
 ---
 
