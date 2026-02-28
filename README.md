@@ -15,7 +15,12 @@ Game ends when either teams "commander" unit is captured.
 [Watch the 3-minute demo here](https://www.youtube.com/watch?v=dIkq_JMOpDs)
 
 ---
+## How to run
+1. Download strategy_game_windows_v0.1.zip from releases
+2. Extract all
+3. Run "Strategy game 2.exe"
 
+---
 ## 📌 Overview
 
 This project is a strategy game prototype developed in Unity.  
