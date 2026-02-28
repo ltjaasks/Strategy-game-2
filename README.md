@@ -38,6 +38,7 @@ The goal was to design a well working system and not polish visuals for the prot
 - C#
 - Shader Graph
 - Git (branch-based workflow)
+- Blender
 
 ---
 
@@ -151,4 +152,11 @@ Future implementation will also evaluate board control, vision control, commande
 - Tracks player mouse on screen.
 #### TileHighlighter
 - Concentrated highlighting for visual effects.
+
+## Credits
+Ground textures appearing in the video by ALP https://assetstore.unity.com/publishers/37465
+Ground textures later replaced with my own textures.
+
+Everthing else made by me.
+
 
