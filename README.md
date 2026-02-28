@@ -152,3 +152,10 @@ Future implementation will also evaluate board control, vision control, commande
 #### TileHighlighter
 - Concentrated highlighting for visual effects.
 
+## Credits
+Ground textures appearing in the video by ALP https://assetstore.unity.com/publishers/37465
+Ground textures later replaced with my own textures.
+
+Everthing else made by me.
+
+
