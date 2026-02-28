@@ -11,6 +11,12 @@
         },
         {
             "m_Id": "a6fed73ac9bd4c988aa5a974d520213e"
+        },
+        {
+            "m_Id": "876854d84f4641a4be3e79fef46ec8db"
+        },
+        {
+            "m_Id": "4076d13d49a24111bdd2f9183e88cb6a"
         }
     ],
     "m_Keywords": [],
@@ -298,6 +304,12 @@
         },
         {
             "m_Id": "a6fed73ac9bd4c988aa5a974d520213e"
+        },
+        {
+            "m_Id": "876854d84f4641a4be3e79fef46ec8db"
+        },
+        {
+            "m_Id": "4076d13d49a24111bdd2f9183e88cb6a"
         }
     ]
 }
@@ -436,6 +448,38 @@
         "w": 0.0
     },
     "m_Labels": []
+}
+
+{
+    "m_SGVersion": 3,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.ColorShaderProperty",
+    "m_ObjectId": "4076d13d49a24111bdd2f9183e88cb6a",
+    "m_Guid": {
+        "m_GuidSerialized": "3ac1616f-eef0-45e8-bd50-dec0bbd710e8"
+    },
+    "m_Name": "ColorB",
+    "m_DefaultRefNameVersion": 1,
+    "m_RefNameGeneratedByDisplayName": "ColorB",
+    "m_DefaultReferenceName": "_ColorB",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
+    "m_DismissedVersion": 0,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
+    "m_Value": {
+        "r": 0.0,
+        "g": 0.30188679695129397,
+        "b": 0.040617816150188449,
+        "a": 1.0
+    },
+    "isMainColor": false,
+    "m_ColorMode": 0
 }
 
 {
@@ -722,8 +766,8 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -177.99998474121095,
-            "y": 454.00006103515627,
+            "x": -192.00001525878907,
+            "y": 405.0000305175781,
             "width": 153.0,
             "height": 34.0
         }
@@ -853,6 +897,38 @@
         "w": 0.0
     },
     "m_Labels": []
+}
+
+{
+    "m_SGVersion": 3,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.ColorShaderProperty",
+    "m_ObjectId": "876854d84f4641a4be3e79fef46ec8db",
+    "m_Guid": {
+        "m_GuidSerialized": "57c27ae6-e835-4cb2-a9de-85eb92266a68"
+    },
+    "m_Name": "ColorA",
+    "m_DefaultRefNameVersion": 1,
+    "m_RefNameGeneratedByDisplayName": "ColorA",
+    "m_DefaultReferenceName": "_ColorA",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": true,
+    "m_UseCustomSlotLabel": false,
+    "m_CustomSlotLabel": "",
+    "m_DismissedVersion": 0,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_PerRendererData": false,
+    "m_customAttributes": [],
+    "m_Value": {
+        "r": 0.025231415405869485,
+        "g": 0.7641509771347046,
+        "b": 0.05780106410384178,
+        "a": 1.0
+    },
+    "isMainColor": false,
+    "m_ColorMode": 0
 }
 
 {
@@ -1191,8 +1267,8 @@
         "m_Expanded": true,
         "m_Position": {
             "serializedVersion": "2",
-            "x": -347.0000305175781,
-            "y": 938.0000610351563,
+            "x": -372.00006103515627,
+            "y": 1038.0001220703125,
             "width": 104.00003051757813,
             "height": 34.0
         }

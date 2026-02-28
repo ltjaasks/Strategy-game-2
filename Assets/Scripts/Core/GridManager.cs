@@ -64,7 +64,7 @@ public class GridManager : MonoBehaviour
     public Vector3 UnitGridPosition(Vector2Int pos)
     {
         Tile tile = GetTile(pos);
-        double e = tile.elevation + 0.5;
+        double e = tile.elevation;
         return new Vector3(pos.x, (float)e, pos.y);
     }
 }
